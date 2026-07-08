@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	</http:listener-config>
 	<flow name="test-get-flow" doc:id="a05e7f8b-b60c-4690-9502-6518700fea0e" >
 		<http:listener doc:name="Listener" doc:id="d888794a-6331-426d-9300-511a6b87a38a" config-ref="http-listener-config" path="/api/test"/>
-		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'Flow execution started' }]" />
+		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'Flow execution started', businessIdentifier: (attributes.queryParams.orderId default attributes.queryParams.customerId default 'N/A') }]" />
 		<logger level="INFO" doc:name="Before Transform Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'Before building test response transform' }]" />
 		<ee:transform doc:name="Transform Message" doc:id="c3668036-5869-4379-b5b8-551b2acd9987" >
 			<ee:message >
@@ -18,7 +18,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="After Transform Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'After building test response transform' }]" />
-		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, status: 'Flow execution completed successfully' }]" />
+		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, status: 'Flow execution completed successfully', businessIdentifier: (attributes.queryParams.orderId default attributes.queryParams.customerId default 'N/A') }]" />
 		<error-handler>
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue">
 				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, errorType: error.errorType, errorDescription: error.description, rootCause: error.cause, businessIdentifier: 'N/A' }]" />
@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="health-get-flow" doc:id="b12f3a4c-d567-4e89-a012-7629811gfb1f" >
 		<http:listener doc:name="Listener" doc:id="e999805b-7442-537e-0411-622b7c98b49f" config-ref="http-listener-config" path="/api/health"/>
 		<set-variable variableName="correlationId" value="#[attributes.headers['x-correlation-id'] default correlationId]" doc:name="Set Correlation Id" />
-		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, message: 'Health check flow execution started' }]" />
+		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, message: 'Health check flow execution started', businessIdentifier: (attributes.queryParams.orderId default attributes.queryParams.customerId default 'N/A') }]" />
 		<ee:transform doc:name="Build Health Response" doc:id="f24579de-6980-5490-c123-883c3bd0ce0g" >
 			<ee:message >
 				<ee:set-payload resource="dwl/health/buildHealthResponse.dwl" />
@@ -37,7 +37,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 				<ee:set-variable variableName="httpStatus" resource="dwl/health/buildHealthHttpStatus.dwl" />
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, status: 'Health check completed successfully' }]" />
+		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, status: 'Health check completed successfully', businessIdentifier: (attributes.queryParams.orderId default attributes.queryParams.customerId default 'N/A') }]" />
 		<error-handler>
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue">
 				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, errorType: error.errorType, errorDescription: error.description, rootCause: error.cause, businessIdentifier: 'N/A' }]" />
