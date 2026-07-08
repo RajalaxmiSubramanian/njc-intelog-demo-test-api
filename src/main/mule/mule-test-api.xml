@@ -5,22 +5,22 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="240724af-8879-4b06-a3c2-dcd94a134cda" >
+	<http:listener-config name="http-listener-config" doc:name="HTTP Listener config" doc:id="240724af-8879-4b06-a3c2-dcd94a134cda" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<flow name="test-get-flow" doc:id="a05e7f8b-b60c-4690-9502-6518700fea0e" >
-		<http:listener doc:name="Listener" doc:id="d888794a-6331-426d-9300-511a6b87a38a" config-ref="HTTP_Listener_config" path="/api/test"/>
-		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'Flow execution started' } output application/json]" category="com.company.api"/>
+		<http:listener doc:name="Listener" doc:id="d888794a-6331-426d-9300-511a6b87a38a" config-ref="http-listener-config" path="/api/test"/>
+		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'Flow execution started' }]" />
 		<ee:transform doc:name="Transform Message" doc:id="c3668036-5869-4379-b5b8-551b2acd9987" >
 			<ee:message >
-				<ee:set-payload resource="dwl/test/buildTestResponse.dwl"/>
+				<ee:set-payload resource="dwl/test/buildTestResponse.dwl" />
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, status: 'SUCCESS', message: 'Flow execution completed' } output application/json]" category="com.company.api"/>
+		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, status: 'Flow execution completed successfully' }]" />
 		<error-handler>
-			<on-error-propagate type="ANY" doc:name="On Error Propagate">
-				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, errorType: error.errorType, errorDescription: error.description, message: 'Flow execution failed' } output application/json]" category="com.company.api"/>
-			</on-error-propagate>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue">
+				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, errorType: error.errorType, errorDescription: error.description }]" />
+			</on-error-continue>
 		</error-handler>
 	</flow>
 </mule>
