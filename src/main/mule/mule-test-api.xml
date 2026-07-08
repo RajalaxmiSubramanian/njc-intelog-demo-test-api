@@ -23,4 +23,49 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			</on-error-continue>
 		</error-handler>
 	</flow>
+	<flow name="health-get-flow" doc:id="b12f3a4c-d567-4e89-a012-7629811gfb1f" >
+		<http:listener doc:name="Listener" doc:id="e999805b-7442-537e-0411-622b7c98b49f" config-ref="http-listener-config" path="/api/health"/>
+		<set-variable variableName="correlationId" value="#[attributes.headers['x-correlation-id'] default correlationId]" doc:name="Set Correlation Id" />
+		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, message: 'Health check flow execution started' }]" />
+		<ee:transform doc:name="Build Health Response" doc:id="f24579de-6980-5490-c123-883c3bd0ce0g" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    correlationId: vars.correlationId,
+    message: "Application is healthy and running"
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
+output application/java
+---
+200]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, status: 'Health check completed successfully' }]" />
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue">
+				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, errorType: error.errorType, errorDescription: error.description }]" />
+				<ee:transform doc:name="Build Error Response" doc:id="g35680ef-7091-6501-d234-994d4ce1df1h" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    correlationId: vars.correlationId,
+    message: "Application health check failed"
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
+output application/java
+---
+503]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
 </mule>
