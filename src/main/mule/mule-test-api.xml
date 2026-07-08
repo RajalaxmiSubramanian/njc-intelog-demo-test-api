@@ -11,15 +11,17 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="test-get-flow" doc:id="a05e7f8b-b60c-4690-9502-6518700fea0e" >
 		<http:listener doc:name="Listener" doc:id="d888794a-6331-426d-9300-511a6b87a38a" config-ref="http-listener-config" path="/api/test"/>
 		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'Flow execution started' }]" />
+		<logger level="INFO" doc:name="Before Transform Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'Before building test response transform' }]" />
 		<ee:transform doc:name="Transform Message" doc:id="c3668036-5869-4379-b5b8-551b2acd9987" >
 			<ee:message >
 				<ee:set-payload resource="dwl/test/buildTestResponse.dwl" />
 			</ee:message>
 		</ee:transform>
+		<logger level="INFO" doc:name="After Transform Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, message: 'After building test response transform' }]" />
 		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, status: 'Flow execution completed successfully' }]" />
 		<error-handler>
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue">
-				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, errorType: error.errorType, errorDescription: error.description }]" />
+				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'test-get-flow', correlationId: correlationId, errorType: error.errorType, errorDescription: error.description, rootCause: error.cause, businessIdentifier: 'N/A' }]" />
 			</on-error-continue>
 		</error-handler>
 	</flow>
@@ -29,40 +31,22 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<logger level="INFO" doc:name="Flow Entry Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, message: 'Health check flow execution started' }]" />
 		<ee:transform doc:name="Build Health Response" doc:id="f24579de-6980-5490-c123-883c3bd0ce0g" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-    correlationId: vars.correlationId,
-    message: "Application is healthy and running"
-}]]></ee:set-payload>
+				<ee:set-payload resource="dwl/health/buildHealthResponse.dwl" />
 			</ee:message>
 			<ee:variables>
-				<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
-output application/java
----
-200]]></ee:set-variable>
+				<ee:set-variable variableName="httpStatus" resource="dwl/health/buildHealthHttpStatus.dwl" />
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Flow Completion Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, status: 'Health check completed successfully' }]" />
 		<error-handler>
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue">
-				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, errorType: error.errorType, errorDescription: error.description }]" />
+				<logger level="ERROR" doc:name="Error Logger" message="#[%dw 2.0 output application/json --- { flowName: 'health-get-flow', correlationId: vars.correlationId, errorType: error.errorType, errorDescription: error.description, rootCause: error.cause, businessIdentifier: 'N/A' }]" />
 				<ee:transform doc:name="Build Error Response" doc:id="g35680ef-7091-6501-d234-994d4ce1df1h" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-    correlationId: vars.correlationId,
-    message: "Application health check failed"
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl/health/buildHealthErrorResponse.dwl" />
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
-output application/java
----
-503]]></ee:set-variable>
+						<ee:set-variable variableName="httpStatus" resource="dwl/health/buildHealthErrorHttpStatus.dwl" />
 					</ee:variables>
 				</ee:transform>
 			</on-error-continue>
